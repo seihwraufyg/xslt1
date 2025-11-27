@@ -1,48 +1,38 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-<xsl:output method="html" encoding="utf-8" indent="yes"/>
-
-<xsl:key name="courses-by-teacher" match="course" use="teacher"/>
-<xsl:key name="courses-by-topic" match="course" use="topics/topic"/>
-<xsl:key name="courses-by-teacher-and-topic" match="course" use="concat(teacher, '|', topics/topic)"/>
-
-<xsl:template match="/">
-<html>
-<head>
-    <title>Наши курсы</title>
-    <meta charset="utf-8"/>
-</head>
-<body>
-    <h1>Наши курсы</h1>
-
-    <h3>Курсы, которые читает Борисов И.О.</h3>
-    <ul>
-        <xsl:for-each select="key('courses-by-teacher', 'Борисов И.О.')">
-            <li><xsl:value-of select="title"/></li>
-        </xsl:for-each>
-    </ul>
-    <h3>Курсы, которые используют XML</h3>
-    <ul>
-        <xsl:for-each select="key('courses-by-topic', 'XML')">
-            <li><xsl:value-of select="title"/></li>
-        </xsl:for-each>
-    </ul>
-    <h3>Курсы, которые читает Борисов И.О., и в которых есть тема XSLT</h3>
-    <ul>
-        <xsl:for-each select="key('courses-by-teacher-and-topic', 'Борисов И.О.|XSLT')">
-            <li><xsl:value-of select="title"/></li>
-        </xsl:for-each>
-    </ul>
-    <h3>Курсы Борисова И.О. с XSLT (альтернативный способ)</h3>
-    <ul>
-        <xsl:variable name="borisov-courses" select="key('courses-by-teacher', 'Борисов И.О.')"/>
-        <xsl:variable name="xslt-courses" select="key('courses-by-topic', 'XSLT')"/>
-        <xsl:for-each select="$borisov-courses[count(. | $xslt-courses) = count($xslt-courses)]">
-            <li><xsl:value-of select="title"/></li>
-        </xsl:for-each>
-    </ul>
-</body>
-</html>
-</xsl:template>
-
+    <xsl:output method="html" encoding="UTF-8" indent="yes"/>
+    <xsl:key name="courses-by-teacher" match="course" use="teachers/teacher"/>
+    <xsl:key name="courses-by-keyword" match="course" use="keywords/keyword"/>
+    <xsl:template match="/">
+        <html>
+            <head>
+                <title>Наши курсы</title>
+            </head>
+            <body>
+                <h1>Наши курсы</h1>
+                <h3>Курсы, которые читает Борисов И.О.</h3>
+                <ul>
+                    <xsl:apply-templates select="key('courses-by-teacher', 'Борисов И.О.')" mode="teacher"/>
+                </ul>
+                <h3>Курсы, которые используют XML</h3>
+                <ul>
+                    <xsl:apply-templates select="key('courses-by-keyword', 'XML')" mode="keyword"/>
+                </ul>
+                <h3>Курсы, которые читает Борисов И.О. и используют XSLT</h3>
+                <ul>
+                    <xsl:apply-templates select="key('courses-by-teacher', 'Борисов И.О.')[
+                        keywords/keyword = 'XSLT']" mode="teacher-keyword"/>
+                </ul>
+            </body>
+        </html>
+    </xsl:template>
+    <xsl:template match="course" mode="teacher">
+        <li><xsl:value-of select="title"/></li>
+    </xsl:template>
+    <xsl:template match="course" mode="keyword">
+        <li><xsl:value-of select="title"/></li>
+    </xsl:template>
+    <xsl:template match="course" mode="teacher-keyword">
+        <li><xsl:value-of select="title"/></li>
+    </xsl:template>
+    
 </xsl:stylesheet>
